@@ -63,7 +63,7 @@ namespace MITCRMS.Controllers
                 }
                 else if (checkRole == "Hod")
                 {
-                    return RedirectToAction("CreateReport", "Report");
+                    return RedirectToAction("CreateReport", "Report"); 
                 }
                 return RedirectToAction("CreateDepartment", "Department");
 
