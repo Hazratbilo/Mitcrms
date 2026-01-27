@@ -1,5 +1,6 @@
 ﻿using MITCRMS.Models.DTOs.Admin;
 using MITCRMS.Models.DTOs.Bursar;
+using MITCRMS.Models.DTOs.Department;
 using MITCRMS.Models.DTOs.Hod;
 using MITCRMS.Models.DTOs.Tutor;
 
@@ -17,8 +18,10 @@ namespace MITCRMS.Models.DTOs.Report
         public Guid HodId { get; set; }
         public HodDto Hod { get; set; }
         public Guid AdminId { get; set; }
+        public DateTime? ReportDate { get; set; }
         public AdminDto Admin { get; set; }
 
         public Guid DepartmentId { get; set; }
+        public DepartmentDto Department { get; set; }
     }
 }

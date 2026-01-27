@@ -219,6 +219,9 @@ namespace MITCRMS.Migrations
                     b.Property<Guid>("HodId")
                         .HasColumnType("char(36)");
 
+                    b.Property<DateTime?>("ReportDate")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 

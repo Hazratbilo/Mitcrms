@@ -278,6 +278,7 @@ namespace MITCRMS.Migrations
                     HodId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     AdminId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     BursarId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    ReportDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     ApprovedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime(6)", nullable: false)

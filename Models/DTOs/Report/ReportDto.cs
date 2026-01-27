@@ -1,5 +1,6 @@
 ﻿using MITCRMS.Models.DTOs.Admin;
 using MITCRMS.Models.DTOs.Bursar;
+using MITCRMS.Models.DTOs.Department;
 using MITCRMS.Models.DTOs.Hod;
 using MITCRMS.Models.DTOs.Tutor;
 using MITCRMS.Models.Enum;
@@ -22,11 +23,14 @@ namespace MITCRMS.Models.DTOs.Report
 
         public Guid AdminId { get; set; }
         public AdminDto Admin { get; set; }
+        public Guid DepartmentId { get; set; }
+        public DepartmentDto DepartmentName { get; set; }
 
         public string Tittle { get; set; }
         public string Content { get; set; }
 
         public ReportStatus Status { get; set; }
+        public DateTime? ReportDate { get; set; }
         public DateTime? ApprovedAt { get; set; }
         public Guid? ApprovedByAdminId { get; set; }
     }

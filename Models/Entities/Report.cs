@@ -9,6 +9,7 @@ namespace MITCRMS.Models.Entities
         public string Content { get; set; }
 
 
+
         public Guid DepartmentId { get; set; }
         public Department Department { get; set; }
 
@@ -31,6 +32,8 @@ namespace MITCRMS.Models.Entities
         //public Guid? ApprovedByAdminId { get; set; }
 
         //public SuperAdmin? ApprovedByAdmin { get; set; }
+        public DateTime? ReportDate { get; set; }
+
         public DateTime? ApprovedAt { get; set; }
 
         public ReportStatus Status { get; set; } = ReportStatus.Pending;

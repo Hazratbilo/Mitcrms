@@ -6,22 +6,96 @@
     ViewData["Title"] = "Create Report";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-earmark-plus me-2"></i>Create New Report
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form asp-action="CreateReport" method="post" id="createReportForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Tittle" class="form-label fw-semibold">
+                                Report Title <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Tittle" class="form-control" placeholder="Enter report title" />
+                            <span asp-validation-for="Tittle" class="text-danger small"></span>
+                        </div>
 
-<form asp-action="CreateReport">
-    <div class="form-group">
-        <label asp-for="Tittle" class="control-label"></label>
-        <input asp-for="Tittle" class="form-control" />
-        <span asp-validation-for="Tittle" class="text-danger"></span>
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label fw-semibold">
+                                Content <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="Content" class="form-control" rows="5" 
+                                      placeholder="Provide a detailed Content of the report"></textarea>
+                            <span asp-validation-for="Content" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DepartmentId" class="form-label fw-semibold">
+                                    Department <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="DepartmentId" class="form-select" 
+                                        asp-items="ViewBag.Departments">
+                                    <option value="">-- Select Department --</option>
+                                </select>
+                                <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                            </div>
+
+                             <div class="col-md-6 mb-3">
+                                <label asp-for="ReportDate" class="form-label fw-semibold">
+                                    Report Date <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="ReportDate" type="date" class="form-control" />
+                                <span asp-validation-for="ReportDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                      
+
+                        <div class="d-flex gap-2 justify-content-end border-top pt-3">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="bi bi-check-circle me-1"></i>Create Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+           
+        </div>
     </div>
+</div>
 
-    <div class="form-group">
-        <label asp-for="Content" class="control-label"></label>
-        <textarea asp-for="Content" class="form-control" rows="5"></textarea>
-        <span asp-validation-for="Content" class="text-danger"></span>
-    </div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    
+    <script>
+        $(document).ready(function() {
+            // Add loading state to submit button
+            $('#createReportForm').on('submit', function() {
+                var $btn = $('#submitBtn');
+                $btn.prop('disabled', true);
+                $btn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Creating...');
+            });
 
-    <button type="submit" class="btn btn-success">Save</button>
-    <a asp-action="CreateReport" class="btn btn-secondary">Back</a>
-</form>
-
+            // Set today's date as default if ReportDate is empty
+            var dateInput = $('input[name="ReportDate"]');
+            if (!dateInput.val()) {
+                dateInput.val(new Date().toISOString().split('T')[0]);
+            }
+        });
+    </script>
+}

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MITCRMS.Contract.Services;
+using MITCRMS.Implementation.Services;
 using MITCRMS.Interface.Services;
 using MITCRMS.Models.DTOs.Report;
 using System.Security.Claims;
@@ -44,8 +45,11 @@ namespace MITCRMS.Controllers
             if (roles.Contains("Hod"))
             {
                 var hodId = currentUser.HodId;
-                var resp = await _reportServices.GetAllByHodReportIdAsync(hodId, cancellationToken);
-                return View(resp.Data ?? Enumerable.Empty<ReportDto>());
+                var hodall = await _reportServices.GetAllByHodReportIdAsync(hodId, cancellationToken);
+
+                var hodReports = (hodall.Data ?? Enumerable.Empty<ReportDto>()).Where(r => r.HodId == hodId);
+                return View(hodReports);
+
             }
             else if (roles.Contains("Tutor"))
             {
@@ -225,18 +229,33 @@ namespace MITCRMS.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-    //[HttpGet]
-    //    [Authorize(Roles = "SuperAdmin")]
-    //    [ValidateAntiForgeryToken]
-    //    public async Task<IActionResult> GetAllReports(CancellationToken cancellationToken)
-    //    {
-    //        var response = await _reportServices.GetAllReportsAsync();
-    //        if (!response.Status)
-    //        {
-    //            ViewBag.Error = response.Message;
-    //            return View(new List<ReportDto>());
-    //        }
-    //        return View(response.Data);
-    //    }
+        //[HttpGet]
+        //    [Authorize(Roles = "SuperAdmin")]
+        //    [ValidateAntiForgeryToken]
+        //    public async Task<IActionResult> GetAllReports(CancellationToken cancellationToken)
+        //    {
+        //        var response = await _reportServices.GetAllReportsAsync();
+        //        if (!response.Status)
+        //        {
+        //            ViewBag.Error = response.Message;
+        //            return View(new List<ReportDto>());
+        //        }
+        //        return View(response.Data);
+        //    }
+        [HttpGet]
+        public async Task<IActionResult> GetMyReports(Guid id, CancellationToken cancellationToken)
+        {
+            var response = await _reportServices.GetReportByIdAsync(id, cancellationToken);
+
+            if (!response.Status)
+            {
+                ViewBag.ErrorMessage = response.Message;
+                return View("GetMyReports"); // NO redirect
+            }
+
+            return View(response.Data);
+        }
+
+
     }
 }

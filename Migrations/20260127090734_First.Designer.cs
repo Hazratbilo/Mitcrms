@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MITCRMS.Migrations
 {
     [DbContext(typeof(MitcrmsContext))]
-    [Migration("20260125210606_First")]
+    [Migration("20260127090734_First")]
     partial class First
     {
         /// <inheritdoc />
@@ -221,6 +221,9 @@ namespace MITCRMS.Migrations
 
                     b.Property<Guid>("HodId")
                         .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("ReportDate")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
