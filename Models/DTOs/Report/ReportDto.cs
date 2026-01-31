@@ -12,18 +12,18 @@ namespace MITCRMS.Models.DTOs.Report
         public Guid Id { get; set; }
         public DateTime DateCreated { get; set; }
 
-        public Guid TutorId { get; set; }
+        public Guid? TutorId { get; set; }
         public TutorDto Tutor { get; set; }
 
-        public Guid HodId { get; set; }
+        public Guid? HodId { get; set; }
         public HodDto Hod { get; set; }
 
-        public Guid BursarId { get; set; }
+        public Guid? BursarId { get; set; }
         public BursarDto Bursar { get; set; }
 
-        public Guid AdminId { get; set; }
+        public Guid? AdminId { get; set; }
         public AdminDto Admin { get; set; }
-        public Guid DepartmentId { get; set; }
+        public Guid? DepartmentId { get; set; }
         public DepartmentDto DepartmentName { get; set; }
 
         public string Tittle { get; set; }

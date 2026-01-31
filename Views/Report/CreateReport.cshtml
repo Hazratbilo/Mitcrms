@@ -1,101 +1,164 @@
 ﻿@model MITCRMS.Models.DTOs.Report.CreateReportRequestModel
 
-
 @{
-    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+        Layout = "~/Views/Shared/_StaffLayout.cshtml";
+    ViewBag.Title = "Staff Dashboard";
     ViewData["Title"] = "Create Report";
+    var userRole = ViewBag.UserRole as string;
+    var userName = ViewBag.UserName as string;
 }
 
-<div class="container-fluid py-4">
+<div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-7">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-primary text-white py-3">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
-                        <i class="bi bi-file-earmark-plus me-2"></i>Create New Report
+                        <i class="fas fa-file-alt me-2"></i>Create New Report
                     </h4>
                 </div>
-                
-                <div class="card-body p-4">
-                    <form asp-action="CreateReport" method="post" id="createReportForm">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                        
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>@ViewBag.SuccessMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="CreateReport" method="post" id="reportForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- User Info Display -->
+                        @* <div class="mb-3">
+                            <label class="form-label fw-bold">Submitted By</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" class="form-control" value="@userName (@userRole)" readonly />
+                            </div>
+                        </div> *@
+
+                        <!-- Department Selection -->
                         <div class="mb-3">
-                            <label asp-for="Tittle" class="form-label fw-semibold">
+                            <label asp-for="DepartmentId" class="form-label fw-bold">
+                                Department <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                <select asp-for="DepartmentId" class="form-select" required>
+                                    <option value="">-- Select Department --</option>
+                                    @if (ViewBag.Departments != null)
+                                    {
+                                        foreach (var dept in ViewBag.Departments)
+                                        {
+                                            <option value="@dept.Value">@dept.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Report Title -->
+                        <div class="mb-3">
+                            <label asp-for="Tittle" class="form-label fw-bold">
                                 Report Title <span class="text-danger">*</span>
                             </label>
-                            <input asp-for="Tittle" class="form-control" placeholder="Enter report title" />
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-heading"></i></span>
+                                <input asp-for="Tittle" class="form-control" placeholder="Enter report title" required maxlength="200" />
+                            </div>
                             <span asp-validation-for="Tittle" class="text-danger small"></span>
                         </div>
 
+                        <!-- Report Content -->
                         <div class="mb-3">
-                            <label asp-for="Content" class="form-label fw-semibold">
-                                Content <span class="text-danger">*</span>
+                            <label asp-for="Content" class="form-label fw-bold">
+                                Report Content <span class="text-danger">*</span>
                             </label>
-                            <textarea asp-for="Content" class="form-control" rows="5" 
-                                      placeholder="Provide a detailed Content of the report"></textarea>
+                            <textarea asp-for="Content" class="form-control" rows="8" placeholder="Enter detailed report content..." required></textarea>
                             <span asp-validation-for="Content" class="text-danger small"></span>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="DepartmentId" class="form-label fw-semibold">
-                                    Department <span class="text-danger">*</span>
-                                </label>
-                                <select asp-for="DepartmentId" class="form-select" 
-                                        asp-items="ViewBag.Departments">
-                                    <option value="">-- Select Department --</option>
-                                </select>
-                                <span asp-validation-for="DepartmentId" class="text-danger small"></span>
-                            </div>
-
-                             <div class="col-md-6 mb-3">
-                                <label asp-for="ReportDate" class="form-label fw-semibold">
-                                    Report Date <span class="text-danger">*</span>
-                                </label>
-                                <input asp-for="ReportDate" type="date" class="form-control" />
-                                <span asp-validation-for="ReportDate" class="text-danger small"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> Provide a detailed description of the report
                             </div>
                         </div>
 
-                      
-
-                        <div class="d-flex gap-2 justify-content-end border-top pt-3">
-                            <a asp-action="Index" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle me-1"></i>Cancel
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2 justify-content-end mt-4">
+                            <a asp-action="CreateReport" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Cancel
                             </a>
                             <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <i class="bi bi-check-circle me-1"></i>Create Report
+                                <i class="fas fa-paper-plane me-1"></i>Submit Report
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
 
-           
+            <!-- Information Card -->
+            <div class="card mt-3 border-info">
+                <div class="card-body">
+                    <h6 class="text-info"><i class="fas fa-lightbulb me-2"></i>Report Submission Guidelines</h6>
+                    <ul class="small mb-0">
+                        <li>Ensure all required fields are filled out</li>
+                        <li>Provide a clear and concise title</li>
+                        <li>Include all relevant details in the content</li>
+                        <li>Reports will be reviewed by the department head</li>
+                        <li>You will be notified of the report status</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     
     <script>
-        $(document).ready(function() {
-            // Add loading state to submit button
-            $('#createReportForm').on('submit', function() {
-                var $btn = $('#submitBtn');
-                $btn.prop('disabled', true);
-                $btn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Creating...');
-            });
-
-            // Set today's date as default if ReportDate is empty
-            var dateInput = $('input[name="ReportDate"]');
-            if (!dateInput.val()) {
-                dateInput.val(new Date().toISOString().split('T')[0]);
-            }
+        // Form submission handling
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Submitting...';
         });
+
+        // Character counter for content (optional enhancement)
+        const contentField = document.querySelector('textarea[name="Content"]');
+        if (contentField) {
+            contentField.addEventListener('input', function() {
+                const length = this.value.length;
+                console.log('Content length:', length);
+            });
+        }
     </script>
 }
+
+<style>
+    .card {
+        border-radius: 10px;
+    }
+    
+    .card-header {
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+</style>

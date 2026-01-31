@@ -8,20 +8,11 @@ namespace MITCRMS.Models.DTOs.Report
 {
     public class CreateReportRequestModel
     {
-        public string Tittle { get; set; }
-        public string Content { get; set; }
-        public Guid TutorId { get; set; }
-        public TutorDto Tutor { get; set; }
+     
+            public Guid DepartmentId { get; set; }    // Department for which the report is created
+            public string Tittle { get; set; }         // Title of the report
+            public string Content { get; set; }       // Content/details of the report
+        
 
-        public Guid BursarId { get; set; }
-        public BursarDto Bursar { get; set; }
-        public Guid HodId { get; set; }
-        public HodDto Hod { get; set; }
-        public Guid AdminId { get; set; }
-        public DateTime? ReportDate { get; set; }
-        public AdminDto Admin { get; set; }
-
-        public Guid DepartmentId { get; set; }
-        public DepartmentDto Department { get; set; }
     }
 }

@@ -22,6 +22,11 @@ namespace MITCRMS.Controllers
         {
             return View();
         }
+        [HttpGet]
+        public IActionResult StaffDashboard()
+        {
+            return View();
+        }
 
 
         [HttpPost]
@@ -51,19 +56,19 @@ namespace MITCRMS.Controllers
                 await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, principal, authenticationProperties);
                 if (checkRole == "Tutor")
                 {
-                    return RedirectToAction("CreateReport", "Report");
+                    return RedirectToAction("StaffDashboard", "User");
                 }
                 else if (checkRole=="Bursar")
                 { 
-                    return RedirectToAction("CreateReport", "Report");
+                    return RedirectToAction("StaffDashboard", "User");
                 }
                 else if (checkRole=="Admin")
                 {
-                    return RedirectToAction("CreateReport"," Report");
+                    return RedirectToAction("StaffDashboard"," User");
                 }
                 else if (checkRole == "Hod")
                 {
-                    return RedirectToAction("CreateReport", "Report"); 
+                    return RedirectToAction("StaffDashboard", "User"); 
                 }
                 return RedirectToAction("CreateDepartment", "Department");
 

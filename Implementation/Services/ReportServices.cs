@@ -2,6 +2,7 @@
 using MITCRMS.Interface.Services;
 using MITCRMS.Models.DTOs;
 using MITCRMS.Models.DTOs.Report;
+using MITCRMS.Models.DTOs.Role;
 using MITCRMS.Models.DTOs.Tutor;
 using MITCRMS.Models.Entities;
 using MITCRMS.Models.Enum;
@@ -70,68 +71,60 @@ namespace MITCRMS.Implementation.Services
             };
         }
 
-        public async Task<BaseResponse<bool>> CreateReportAsync(CreateReportRequestModel request)
+        public async Task<BaseResponse<bool>> CreateReportAsync(
+       CreateReportRequestModel request,
+       Guid loggedInUserId,
+       string role)
         {
             if (request == null)
-            {
-                return new BaseResponse<bool> { Message = "Invalid request", Status = false };
-            }
+                return new BaseResponse<bool> { Status = false, Message = "Invalid request" };
 
             if (request.DepartmentId == Guid.Empty)
-            {
-                return new BaseResponse<bool> { Message = "DepartmentId is required", Status = false };
-            }
-            Bursar bursar = null;
-            Admin admin = null;
+                return new BaseResponse<bool> { Status = false, Message = "Department is required" };
+
             Tutor tutor = null;
+            Admin admin = null;
             Hod hod = null;
+            Bursar bursar = null;
 
-            if (request.TutorId != Guid.Empty)
-            {
-                tutor = await _tutorRepository.Get<Tutor>(t => t.Id == request.TutorId);
-                if (tutor == null)
-                {
-                    return new BaseResponse<bool> { Message = "Tutor not found", Status = false };
-                }
-            }
+            var normalizedRole = role.Trim().ToLowerInvariant();
 
-            if (request.HodId!=Guid.Empty)
+            switch (normalizedRole)
             {
-                hod = await _hodRepository.Get<Hod>(h => h.Id == request.HodId);
-                if (hod == null)
-                {
-                    return new BaseResponse<bool> { Message = "Hod not found", Status = false };
-                }
-            }
-            if (request.AdminId!=Guid.Empty)
-            {
-                admin = await _adminRepository.Get<Admin>(a => a.Id == request.AdminId);
-                if (admin == null)
-                {
-                    return new BaseResponse<bool> { Message = "Admin not found", Status = false };
-                }
-            }
-            if (request.BursarId!=Guid.Empty)
-            {
-                bursar = await _bursarRepository.Get<Bursar>(b => b.Id == request.BursarId);
-                if (tutor == null)
-                {
-                    return new BaseResponse<bool> { Message = "Bursar not found", Status = false };
-                }
-            }
+                case "tutor":
+                    tutor = await _tutorRepository.Get<Tutor>(t => t.UserId == loggedInUserId);
+                    if (tutor == null)
+                        return new BaseResponse<bool> { Status = false, Message = "Tutor not found" };
+                    break;
 
+                case "admin":
+                    admin = await _adminRepository.Get<Admin>(a => a.Id == loggedInUserId);
+                    if (admin == null)
+                        return new BaseResponse<bool> { Status = false, Message = "Admin not found" };
+                    break;
 
-            if (tutor == null && hod == null && bursar==null && admin==null)
-            {
-                return new BaseResponse<bool> { Message = "Either TutorId,HodId,BursarId or AdminId must be provided", Status = false };
+                case "hod":
+                    hod = await _hodRepository.Get<Hod>(h => h.Id == loggedInUserId);
+                    if (hod == null)
+                        return new BaseResponse<bool> { Status = false, Message = "HOD not found" };
+                    break;
+
+                case "bursar":
+                    bursar = await _bursarRepository.Get<Bursar>(b => b.Id == loggedInUserId);
+                    if (bursar == null)
+                        return new BaseResponse<bool> { Status = false, Message = "Bursar not found" };
+                    break;
+
+                default:
+                    return new BaseResponse<bool> { Status = false, Message = "Invalid user role" };
             }
 
             var report = new Report
             {
-                TutorId = tutor.Id,
-                AdminId = admin.Id,
-                HodId = hod.Id,
-                BursarId =bursar.Id,
+                TutorId = tutor?.Id,
+                AdminId = admin?.Id,
+                HodId = hod?.Id,
+                BursarId = bursar?.Id,
                 DepartmentId = request.DepartmentId,
                 Tittle = request.Tittle,
                 Content = request.Content,
@@ -139,17 +132,16 @@ namespace MITCRMS.Implementation.Services
                 DateCreated = DateTime.UtcNow
             };
 
-            var created = await _reportRepository.Add(report);
+            await _reportRepository.Add(report);
             await _unitOfWork.SaveChangesAsync(CancellationToken.None);
 
-            if (created == null)
+            return new BaseResponse<bool>
             {
-                _logger.LogError("Report couldn't be created");
-                return new BaseResponse<bool> { Message = "Report couldn't be created", Status = false };
-            }
-
-            return new BaseResponse<bool> { Message = "Report created", Status = true };
+                Status = true,
+                Message = "Report created successfully"
+            };
         }
+
 
         public async Task<BaseResponse<bool>> DeleteAsync(Guid tutorId)
         {
@@ -216,17 +208,17 @@ namespace MITCRMS.Implementation.Services
             return new BaseResponse<ReportDto> { Message = "Report fetched", Status = true, Data = MapToDto(report) };
         }
 
-        public async Task<BaseResponse<IReadOnlyList<ReportDto>>> GetReportsAsync(CancellationToken cancellationToken)
-        {
-            var reports = await _reportRepository.GetAllReport();
-            if (reports == null || !reports.Any())
-            {
-                return new BaseResponse<IReadOnlyList<ReportDto>> { Message = "No reports found", Status = false, Data = Array.Empty<ReportDto>() };
-            }
+        //public async Task<BaseResponse<IReadOnlyList<ReportDto>>> GetReportsAsync(CancellationToken cancellationToken)
+        //{
+        //    var reports = await _reportRepository.GetAllReports();
+        //    if (reports == null || !reports.Any())
+        //    {
+        //        return new BaseResponse<IReadOnlyList<ReportDto>> { Message = "No reports found", Status = false, Data = Array.Empty<ReportDto>() };
+        //    }
 
-            var data = reports.Select(MapToDto).ToList();
-            return new BaseResponse<IReadOnlyList<ReportDto>> { Message = "Data fetched successfully", Status = true, Data = data };
-        }
+        //    var data = reports.Select(MapToDto).ToList();
+        //    return new BaseResponse<IReadOnlyList<ReportDto>> { Message = "Data fetched successfully", Status = true, Data = data };
+        //}
 
         public async Task<BaseResponse<bool>> UpdateReport(Guid id, CreateReportRequestModel request)
         {
@@ -303,17 +295,17 @@ namespace MITCRMS.Implementation.Services
             };
         }
 
-        public async Task<BaseResponse<IReadOnlyList<ReportDto>>> GetAllReportsAsync(CancellationToken cancellationToken)
-        {
-            var reports = await _reportRepository.GetAllReport();
-            if (reports == null || !reports.Any())
-            {
-                return new BaseResponse<IReadOnlyList<ReportDto>> { Message = "No reports found", Status = false, Data = Array.Empty<ReportDto>() };
-            }
+        //public async Task<BaseResponse<IReadOnlyList<ReportDto>>> GetAllReportsAsync(CancellationToken cancellationToken)
+        //{
+        //    var reports = await _reportRepository.GetAllReport();
+        //    if (reports == null || !reports.Any())
+        //    {
+        //        return new BaseResponse<IReadOnlyList<ReportDto>> { Message = "No reports found", Status = false, Data = Array.Empty<ReportDto>() };
+        //    }
 
-            var data = reports.Select(MapToDto).ToList();
-            return new BaseResponse<IReadOnlyList<ReportDto>> { Message = "Data fetched successfully", Status = true, Data = data };
-        }
+        //    var data = reports.Select(MapToDto).ToList();
+        //    return new BaseResponse<IReadOnlyList<ReportDto>> { Message = "Data fetched successfully", Status = true, Data = data };
+        //}
 
         public async Task<BaseResponse<IReadOnlyList<ReportDto>>> GetAllByTutorReportIdAsync(Guid userTutorId, CancellationToken cancellationToken)
         {
@@ -355,6 +347,69 @@ namespace MITCRMS.Implementation.Services
         }
 
         public Task<BaseResponse<IReadOnlyList<ReportDto>>> GetAllByDepartmentReportsAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<Report>> GetReportsByUserAsync(Guid userId, string role)
+        {
+            IEnumerable<Report> reports = new List<Report>();
+
+            switch (role.ToLower())
+            {
+                case "tutor":
+                    reports = await _reportRepository.GetAll(r => r.TutorId == userId);
+                    break;
+
+                case "hod":
+                    reports = await _reportRepository.GetAll(r => r.HodId == userId);
+                    break;
+
+                case "admin":
+                    reports = await _reportRepository.GetAll(r => r.AdminId == userId);
+                    break;
+
+                case "bursar":
+                    reports = await _reportRepository.GetAll(r => r.BursarId == userId);
+                    break;
+
+                default:
+                    _logger.LogWarning("Invalid role provided to GetReportsByUserAsync");
+                    break;
+            }
+
+            return reports;
+        }
+        
+
+        public async Task<BaseResponse<IEnumerable<ReportDto>>> GetMyReportsAsync(Guid userId)
+        {
+            var getAllReports = await _reportRepository.GetMyReports(r => r.Tutor.UserId == userId || r.Admin.UserId == userId || r.Bursar.UserId == userId || r.Hod.UserId == userId);
+            if (!getAllReports.Any())
+            {
+                _logger.LogError($"No Note found");
+                return new BaseResponse<IEnumerable<ReportDto>>
+                {
+                    Message = $"No Note found",
+                    Status = false,
+                };
+            }
+            _logger.LogInformation("All Report fetched successfully");
+            return new BaseResponse<IEnumerable<ReportDto>>
+            {
+                Message = "All Report fetched successfully",
+                Status = true,
+                Data = getAllReports.Select(dpt => new ReportDto
+                {
+                    Id = dpt.Id,
+                    Tittle = dpt.Tittle,
+                    Content = dpt.Content,
+                    DateCreated = dpt.DateCreated,
+                }).ToList()
+            };
+        }
+
+        public Task<BaseResponse<IEnumerable<ReportDto>>> GetAllReportsAsync()
         {
             throw new NotImplementedException();
         }

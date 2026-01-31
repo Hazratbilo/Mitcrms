@@ -36,7 +36,7 @@ namespace MITCRMS.Implementation.Repository
                 .ToListAsync();
         }
 
-
+        
         public IQueryable<T> QueryWhere<T>(Expression<Func<T, bool>> expression) where T : BaseEntity
         {
             return _mitcrmsContext.Set<T>().Where(expression);

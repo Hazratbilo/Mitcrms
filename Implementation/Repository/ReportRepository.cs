@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using MITCRMS.Contract.Entity;
 using MITCRMS.Interface.Repository;
 using MITCRMS.Models.Entities;
 using MITCRMS.Models.Enum;
 using MITCRMS.Persistence.Context;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace MITCRMS.Implementation.Repository
 {
@@ -167,5 +169,54 @@ namespace MITCRMS.Implementation.Repository
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Report>> GetAll(Expression<Func<Report, bool>> predicate)
+        {
+            return await _mitcrmsContext.Set<Report>()
+                                 .Where(predicate)
+                                 .Include(r => r.Department)
+                                 .Include(r => r.Tutor)
+                                 .Include(r => r.Hod)
+                                 .Include(r => r.Admin)
+                                 .Include(r => r.Bursar)
+                                 .ToListAsync();
+        }
+
+        public async Task<Report> AddReport(Report report)
+        {
+            await _mitcrmsContext.Set<Report>().AddAsync(report);
+            return report;
+        }
+        //public async Task<List<Report>> GetAllReports()
+        //{
+
+        //    var report = await _mitcrmsContext.Set<Report>().ToListAsync();
+        //    return report;
+        //}
+        public async Task<IEnumerable<Report>> GetAllReports()
+        {
+            var report = await _mitcrmsContext.Set<Report>().ToListAsync();
+              return report;
+        }
+
+
+        public Task<IEnumerable<Report>> GetAlReports()
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<IReadOnlyList<Report>> GetMyReports(Expression<Func<Report, bool>> expression)
+        {
+            return await _mitcrmsContext.Set<Report>()
+                .Where(expression)
+                .Include(r => r.Bursar)
+                .Include(r => r.Admin)
+                .Include(r => r.Hod)
+                .Include(r => r.Tutor)
+                .OrderByDescending(r => r.DateCreated)
+                .AsSplitQuery()
+                .ToListAsync();
+        }
+
     }
 }

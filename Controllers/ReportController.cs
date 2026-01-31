@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using MITCRMS.Contract.Services;
 using MITCRMS.Implementation.Services;
 using MITCRMS.Interface.Services;
+using MITCRMS.Models.DTOs;
 using MITCRMS.Models.DTOs.Report;
+using MITCRMS.Models.Entities;
 using System.Security.Claims;
 
 namespace MITCRMS.Controllers
@@ -36,11 +39,11 @@ namespace MITCRMS.Controllers
             var currentUser = await _identityService.GetLoggedInUser();
             var roles = await _identityService.GetRolesAsync(currentUser);
 
-            if (roles.Contains("SuperAdmin"))
-            {
-                var resp = await _reportServices.GetReportsAsync(cancellationToken);
-                return View(resp.Data ?? Enumerable.Empty<ReportDto>());
-            }
+            //if (roles.Contains("SuperAdmin"))
+            //{
+            //    var resp = await _reportServices.GetAllBy(cancellationToken);
+            //    return View(resp.Data ?? Enumerable.Empty<ReportDto>());
+            //}
 
             if (roles.Contains("Hod"))
             {
@@ -91,41 +94,44 @@ namespace MITCRMS.Controllers
             ViewData["Departments"] = new SelectList(depts, "Value", "Text");
             return View(new CreateReportRequestModel());
         }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+
         [HttpPost]
-        [Authorize(Roles = "Tutor,Hod,Bursar,Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateReport(CreateReportRequestModel model)
         {
             if (!ModelState.IsValid)
+                return View(model);
+
+            // Get logged-in user ID and role
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var roleClaim = User.FindFirst(ClaimTypes.Role);
+
+            if (userIdClaim == null || roleClaim == null)
             {
-                var depts = await _departmentServices.GetDepartmentsSelectList();
-                ViewData["Departments"] = new SelectList(depts, "Value", "Text");
+                TempData["Error"] = "User information not found. Please login again.";
+                return RedirectToAction("Login", "Account"); // or wherever your login is
+            }
+
+            var userId = Guid.Parse(userIdClaim.Value);
+            var role = roleClaim.Value;
+
+            var result = await _reportServices.CreateReportAsync(model, userId, role);
+
+            if (!result.Status)
+            {
+                TempData["Error"] = result.Message;
                 return View(model);
             }
 
-            var currentUser = await _identityService.GetLoggedInUser();
-            var roles = await _identityService.GetRolesAsync(currentUser);
-
-            if (roles.Contains("Tutor"))
-                model.TutorId = currentUser.TutorId;
-            if (roles.Contains("Hod"))
-                model.HodId = currentUser.HodId;
-            if (roles.Contains("Bursar"))
-                model.BursarId = currentUser.BursarId;
-            if (roles.Contains("Admin"))
-                model.AdminId = currentUser.AdminId;
-
-            var resp = await _reportServices.CreateReportAsync(model);
-            if (!resp.Status)
-            {
-                ModelState.AddModelError(string.Empty, resp.Message ?? "Could not create report");
-                var depts = await _departmentServices.GetDepartmentsSelectList();
-                ViewData["Departments"] = new SelectList(depts, "Value", "Text");
-                return View(model);
-            }
-
-            return RedirectToAction(nameof(Index));
+            TempData["Success"] = "Report created successfully!";
+            return RedirectToAction("GetMyReports", "Report"); // or wherever you want to redirect
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Details(Guid id)
@@ -186,6 +192,7 @@ namespace MITCRMS.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+ 
 
         [HttpGet]
         [Authorize(Roles = "SuperAdmin")]
@@ -228,34 +235,34 @@ namespace MITCRMS.Controllers
 
             return RedirectToAction(nameof(Details), new { id });
         }
-
-        //[HttpGet]
-        //    [Authorize(Roles = "SuperAdmin")]
-        //    [ValidateAntiForgeryToken]
-        //    public async Task<IActionResult> GetAllReports(CancellationToken cancellationToken)
-        //    {
-        //        var response = await _reportServices.GetAllReportsAsync();
-        //        if (!response.Status)
-        //        {
-        //            ViewBag.Error = response.Message;
-        //            return View(new List<ReportDto>());
-        //        }
-        //        return View(response.Data);
-        //    }
         [HttpGet]
-        public async Task<IActionResult> GetMyReports(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetMyReports()
         {
-            var response = await _reportServices.GetReportByIdAsync(id, cancellationToken);
-
-            if (!response.Status)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if(string.IsNullOrEmpty(userIdClaim))
             {
-                ViewBag.ErrorMessage = response.Message;
-                return View("GetMyReports"); // NO redirect
+                return Unauthorized();
             }
 
-            return View(response.Data);
-        }
+            if(!Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                return BadRequest("Invalid user ID");
+            }
 
+            Console.WriteLine("UserId: " + userId);
+
+            var resp = await _reportServices.GetMyReportsAsync(userId);
+
+            if (!resp.Status || resp.Data == null)
+                return NotFound(resp.Message);
+            return View(resp.Data);
+        }
+        //[HttpGet]
+        //public async Task<IActionResult> GetMyReports()
+        //{
+        //    var reportList = await _reportServices.GetAllReportsAsync();
+        //}
 
     }
 }
+

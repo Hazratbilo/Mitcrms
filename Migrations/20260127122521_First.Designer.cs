@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MITCRMS.Migrations
 {
     [DbContext(typeof(MitcrmsContext))]
-    [Migration("20260127090734_First")]
+    [Migration("20260127122521_First")]
     partial class First
     {
         /// <inheritdoc />
@@ -200,13 +200,13 @@ namespace MITCRMS.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("AdminId")
+                    b.Property<Guid?>("AdminId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("ApprovedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("BursarId")
+                    b.Property<Guid?>("BursarId")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Content")
@@ -219,7 +219,7 @@ namespace MITCRMS.Migrations
                     b.Property<Guid>("DepartmentId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("HodId")
+                    b.Property<Guid?>("HodId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("ReportDate")
@@ -232,7 +232,7 @@ namespace MITCRMS.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<Guid>("TutorId")
+                    b.Property<Guid?>("TutorId")
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
@@ -559,15 +559,12 @@ namespace MITCRMS.Migrations
                 {
                     b.HasOne("MITCRMS.Models.Entities.Admin", "Admin")
                         .WithMany("Reports")
-                        .HasForeignKey("AdminId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AdminId");
 
                     b.HasOne("MITCRMS.Models.Entities.Bursar", "Bursar")
                         .WithMany("Reports")
                         .HasForeignKey("BursarId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("MITCRMS.Models.Entities.Department", "Department")
                         .WithMany("Reports")
@@ -577,15 +574,11 @@ namespace MITCRMS.Migrations
 
                     b.HasOne("MITCRMS.Models.Entities.Hod", "Hod")
                         .WithMany("Reports")
-                        .HasForeignKey("HodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("HodId");
 
                     b.HasOne("MITCRMS.Models.Entities.Tutor", "Tutor")
                         .WithMany("Reports")
-                        .HasForeignKey("TutorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TutorId");
 
                     b.Navigation("Admin");
 
