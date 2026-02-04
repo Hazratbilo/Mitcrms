@@ -216,6 +216,9 @@ namespace MITCRMS.Migrations
                     b.Property<Guid>("DepartmentId")
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("FileUrl")
+                        .HasColumnType("longtext");
+
                     b.Property<Guid?>("HodId")
                         .HasColumnType("char(36)");
 

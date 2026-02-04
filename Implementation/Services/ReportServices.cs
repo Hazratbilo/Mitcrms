@@ -71,16 +71,14 @@ namespace MITCRMS.Implementation.Services
             };
         }
 
-        public async Task<BaseResponse<bool>> CreateReportAsync(
+        public async Task<BaseResponse<bool>> CreateReportAsync(string fileUrl, 
        CreateReportRequestModel request,
        Guid loggedInUserId,
        string role)
         {
-            if (request == null)
-                return new BaseResponse<bool> { Status = false, Message = "Invalid request" };
+            if (fileUrl is null && request.Content is null)
+                return new BaseResponse<bool> { Status = false, Message = "Content and file cannot be empty" };
 
-            if (request.DepartmentId == Guid.Empty)
-                return new BaseResponse<bool> { Status = false, Message = "Department is required" };
 
             Tutor tutor = null;
             Admin admin = null;
@@ -128,18 +126,17 @@ namespace MITCRMS.Implementation.Services
                 DepartmentId = request.DepartmentId,
                 Tittle = request.Tittle,
                 Content = request.Content,
+                FileUrl = fileUrl,
                 Status = ReportStatus.Pending,
                 DateCreated = DateTime.UtcNow
             };
 
             await _reportRepository.Add(report);
-            await _unitOfWork.SaveChangesAsync(CancellationToken.None);
+            var result = await _unitOfWork.SaveChangesAsync(CancellationToken.None);
 
-            return new BaseResponse<bool>
-            {
-                Status = true,
-                Message = "Report created successfully"
-            };
+            return result > 0 ? new BaseResponse<bool> { Status = true, Message = "Report created successfully"
+            } 
+            : new BaseResponse<bool> { Status = false, Message = "Report submission failed"};
         }
 
 
@@ -295,17 +292,7 @@ namespace MITCRMS.Implementation.Services
             };
         }
 
-        //public async Task<BaseResponse<IReadOnlyList<ReportDto>>> GetAllReportsAsync(CancellationToken cancellationToken)
-        //{
-        //    var reports = await _reportRepository.GetAllReport();
-        //    if (reports == null || !reports.Any())
-        //    {
-        //        return new BaseResponse<IReadOnlyList<ReportDto>> { Message = "No reports found", Status = false, Data = Array.Empty<ReportDto>() };
-        //    }
-
-        //    var data = reports.Select(MapToDto).ToList();
-        //    return new BaseResponse<IReadOnlyList<ReportDto>> { Message = "Data fetched successfully", Status = true, Data = data };
-        //}
+    
 
         public async Task<BaseResponse<IReadOnlyList<ReportDto>>> GetAllByTutorReportIdAsync(Guid userTutorId, CancellationToken cancellationToken)
         {
@@ -406,6 +393,63 @@ namespace MITCRMS.Implementation.Services
                     Content = dpt.Content,
                     DateCreated = dpt.DateCreated,
                 }).ToList()
+            };
+        }
+        public async Task<BaseResponse<ReportDto>> GetReportById(Guid id)
+        {
+            var getNote = await _reportRepository.GetReportById(id);
+            if (getNote == null)
+            {
+                _logger.LogError($"Report with id {id} not found");
+                return new BaseResponse<ReportDto>
+                {
+                    Message = $"Report with id {id} not found",
+                    Status = false,
+                };
+            }
+            _logger.LogInformation("Report fetched successfully");
+            return new BaseResponse<ReportDto>
+            {
+                Message = "Report fetched successfully",
+                Status = true,
+                Data = new ReportDto
+                {
+                    Id = getNote.Id,
+                    Tittle = getNote.Tittle,
+                    Content = getNote.Content,
+                    DateCreated = getNote.DateCreated,
+
+                }
+            };
+        }
+        public async Task<BaseResponse<bool>> DeleteReport(Guid id)
+        {
+            var getNote = await _reportRepository.GetReportById(id);
+            if (getNote == null)
+            {
+                _logger.LogError($"Report with id {id} not found");
+                return new BaseResponse<bool>
+                {
+                    Message = $"Report with id {id} not found",
+                    Status = false
+                };
+            }
+
+            var deleteNote = await _reportRepository.DeleteReport(id);
+            if (deleteNote)
+            {
+                _logger.LogInformation("Delete Report Success");
+                return new BaseResponse<bool>
+                {
+                    Message = "Delete Report Success",
+                    Status = true
+                };
+            }
+            _logger.LogError("Delete Report Failed");
+            return new BaseResponse<bool>
+            {
+                Message = "Delete Report Failed",
+                Status = false
             };
         }
 

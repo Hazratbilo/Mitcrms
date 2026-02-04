@@ -8,6 +8,7 @@ namespace MITCRMS.Models.DTOs.Report.Validation
         {
             RuleFor(x => x.Content).NotEmpty().WithMessage("Content is required");
             RuleFor(x => x.Tittle).NotEmpty().WithMessage("Tittle is required");
+            RuleFor(x => x.DepartmentId).NotEmpty().WithMessage("DepartmentId is required");
         }
     }
 }

@@ -4,6 +4,7 @@ using MITCRMS.Models.DTOs.Department;
 using MITCRMS.Models.DTOs.Hod;
 using MITCRMS.Models.DTOs.Tutor;
 using MITCRMS.Models.Enum;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MITCRMS.Models.DTOs.Report
 {
@@ -28,7 +29,7 @@ namespace MITCRMS.Models.DTOs.Report
 
         public string Tittle { get; set; }
         public string Content { get; set; }
-
+        public string? FileUrl { get; set; }
         public ReportStatus Status { get; set; }
         public DateTime? ReportDate { get; set; }
         public DateTime? ApprovedAt { get; set; }

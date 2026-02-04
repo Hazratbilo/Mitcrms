@@ -217,6 +217,18 @@ namespace MITCRMS.Implementation.Repository
                 .AsSplitQuery()
                 .ToListAsync();
         }
+        public async Task<Report> GetReportById(Guid id)
+        {
+            return await _mitcrmsContext.Set<Report>().FirstOrDefaultAsync(x => x.Id == id);
+
+        }
+        public async Task<bool> DeleteReport(Guid id)
+        {
+            var note = await _mitcrmsContext.Set<Report>().FindAsync(id);
+            _mitcrmsContext.Set<Report>().Remove(note);
+            await _mitcrmsContext.SaveChangesAsync();
+            return true;
+        }
 
     }
 }

@@ -19,7 +19,9 @@ namespace MITCRMS.Interface.Repository
         Task<IReadOnlyList<Report>> GetReportsByHodId(Guid userHodId);
         Task<IReadOnlyList<Report>>GetReportsByTutorId(Guid usertutorId);
         Task<IReadOnlyList<Report>> GetReportsByBursarId(Guid userbursarId);
+        public Task<bool> DeleteReport(Guid id);
         Task<IReadOnlyList<Report>> GetReportsByAdminId(Guid useradminId);
+        public Task<Report> GetReportById(Guid id);
         Task<IReadOnlyList<Report>> GetMyReports(Expression<Func<Report, bool>> expression);
 
 

@@ -54,6 +54,9 @@
                                         <th scope="col" style="width: 15%">
                                             <i class="far fa-calendar-alt me-1"></i>Date Created
                                         </th>
+                                        <th scope="col" style="width: 10%" class="text-center">
+                                            <i class="fas fa-info-circle me-1"></i>Status
+                                        </th>
                                         <th scope="col" style="width: 15%" class="text-center">
                                             <i class="fas fa-cog me-1"></i>Actions
                                         </th>
@@ -74,6 +77,18 @@
                                                 </div>
                                             </td>
                                             <td>
+    @if (!string.IsNullOrEmpty(report.FileUrl))
+    {
+        <a href="@report.FileUrl" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-paperclip"></i> View File
+        </a>
+    }
+    else
+    {
+        <span class="text-muted">No file</span>
+    }
+</td>
+                                            <td>
                                                 <small class="text-muted">
                                                     <i class="far fa-calendar-alt me-1"></i>
                                                     @report.DateCreated.ToString("MMM dd, yyyy")
@@ -83,12 +98,36 @@
                                                 </small>
                                             </td>
                                             <td class="text-center">
+                                                @switch (report.Status)
+                                                {
+                                                    case MITCRMS.Models.Enum.ReportStatus.Pending:
+                                                        <span class="badge bg-warning text-dark">
+                                                            <i class="fas fa-hourglass-half me-1"></i>Pending
+                                                        </span>
+                                                        break;
+
+                                                    case MITCRMS.Models.Enum.ReportStatus.Approved:
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check-circle me-1"></i>Approved
+                                                        </span>
+                                                        break;
+
+                                                    case MITCRMS.Models.Enum.ReportStatus.Rejected:
+                                                        <span class="badge bg-danger">
+                                                            <i class="fas fa-times-circle me-1"></i>Cancelled
+                                                        </span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td class="text-center">
                                                 <div class="btn-group btn-group-sm" role="group">
                                                     <a asp-action="ViewReport" asp-route-id="@report.Id" 
                                                        class="btn btn-outline-info" 
                                                        title="View Details">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
+                                                    @if (report.Status == MITCRMS.Models.Enum.ReportStatus.Pending)
+                                                    {
                                                     <a asp-action="EditReport" asp-route-id="@report.Id" 
                                                        class="btn btn-outline-warning" 
                                                        title="Edit Report">
@@ -100,6 +139,7 @@
                                                             onclick="confirmDelete(@report.Id, '@report.Tittle')">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
+                                                    }
                                                 </div>
                                             </td>
                                         </tr>

@@ -37,14 +37,6 @@
                     <form asp-action="CreateReport" method="post" id="reportForm">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                        <!-- User Info Display -->
-                        @* <div class="mb-3">
-                            <label class="form-label fw-bold">Submitted By</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                <input type="text" class="form-control" value="@userName (@userRole)" readonly />
-                            </div>
-                        </div> *@
 
                         <!-- Department Selection -->
                         <div class="mb-3">
@@ -89,6 +81,10 @@
                             <div class="form-text">
                                 <i class="fas fa-info-circle"></i> Provide a detailed description of the report
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Upload File</label>
+                            <input asp-for="FileUrl" type="file" class="form-control" />
                         </div>
 
                         <!-- Action Buttons -->

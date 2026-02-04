@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MITCRMS.Migrations
 {
     [DbContext(typeof(MitcrmsContext))]
-    [Migration("20260127122521_First")]
+    [Migration("20260202124743_First")]
     partial class First
     {
         /// <inheritdoc />
@@ -218,6 +218,9 @@ namespace MITCRMS.Migrations
 
                     b.Property<Guid>("DepartmentId")
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("FileUrl")
+                        .HasColumnType("longtext");
 
                     b.Property<Guid?>("HodId")
                         .HasColumnType("char(36)");

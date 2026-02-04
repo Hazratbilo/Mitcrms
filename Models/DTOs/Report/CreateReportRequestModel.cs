@@ -9,10 +9,10 @@ namespace MITCRMS.Models.DTOs.Report
     public class CreateReportRequestModel
     {
      
-            public Guid DepartmentId { get; set; }    // Department for which the report is created
-            public string Tittle { get; set; }         // Title of the report
-            public string Content { get; set; }       // Content/details of the report
-        
+            public Guid DepartmentId { get; set; } 
+            public string Tittle { get; set; }     
+            public string Content { get; set; }
+            public string? FileUrl { get; set; }
 
     }
 }

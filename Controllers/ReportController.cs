@@ -20,15 +20,17 @@ namespace MITCRMS.Controllers
         private readonly IIdentityService _identityService;
         private readonly IReportServices reportServices;
         private readonly ILogger<ReportController> _logger;
+        private readonly IWebHostEnvironment _env;
 
         public ReportController(
             IReportServices reportServices,
             IDepartmentServices departmentServices,
-            IIdentityService identityService,
+            IIdentityService identityService, IWebHostEnvironment env,
             ILogger<ReportController> logger)
         {
             _reportServices = reportServices;
             _departmentServices = departmentServices;
+            _env = env;
             _identityService = identityService;
             _logger = logger;
         }
@@ -102,25 +104,38 @@ namespace MITCRMS.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateReport(CreateReportRequestModel model)
+        public async Task<IActionResult> CreateReport(IFormFile file, CreateReportRequestModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
 
-            // Get logged-in user ID and role
+
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             var roleClaim = User.FindFirst(ClaimTypes.Role);
 
             if (userIdClaim == null || roleClaim == null)
             {
                 TempData["Error"] = "User information not found. Please login again.";
-                return RedirectToAction("Login", "Account"); // or wherever your login is
+                return RedirectToAction("Login", "Account");
             }
 
             var userId = Guid.Parse(userIdClaim.Value);
             var role = roleClaim.Value;
 
-            var result = await _reportServices.CreateReportAsync(model, userId, role);
+
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            var uploadsPath = Path.Combine(_env.WebRootPath, "reports");
+            Directory.CreateDirectory(uploadsPath);
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var fullPath = Path.Combine(uploadsPath, fileName);
+
+            using var stream = new FileStream(fullPath, FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            var fileUrl = $"{Request.Scheme}://{Request.Host}/reports/{fileName}";
+
+            var result = await _reportServices.CreateReportAsync(fileUrl, model, userId, role);
 
             if (!result.Status)
             {
@@ -129,19 +144,19 @@ namespace MITCRMS.Controllers
             }
 
             TempData["Success"] = "Report created successfully!";
-            return RedirectToAction("GetMyReports", "Report"); // or wherever you want to redirect
+            return RedirectToAction("GetMyReports", "Report");
         }
 
 
-        [HttpGet]
-        public async Task<IActionResult> Details(Guid id)
-        {
-            var resp = await _reportServices.GetReportByIdAsync(id, CancellationToken.None);
-            if (!resp.Status || resp.Data == null)
-                return NotFound(resp.Message);
+        //[HttpGet]
+        //public async Task<IActionResult> Details(Guid id)
+        //{
+        //    var resp = await _reportServices.GetReportByIdAsync(id, CancellationToken.None);
+        //    if (!resp.Status || resp.Data == null)
+        //        return NotFound(resp.Message);
 
-            return View(resp.Data);
-        }
+        //    return View(resp.Data);
+        //}
 
         [HttpGet]
         [Authorize(Roles = "SuperAdmin")]
@@ -213,7 +228,7 @@ namespace MITCRMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var resp = await _reportServices.DeleteAsync(id);
+            var resp = await _reportServices.DeleteReport(id);
             if (!resp.Status)
             {
                 TempData["Error"] = resp.Message;
@@ -257,11 +272,32 @@ namespace MITCRMS.Controllers
                 return NotFound(resp.Message);
             return View(resp.Data);
         }
-        //[HttpGet]
-        //public async Task<IActionResult> GetMyReports()
-        //{
-        //    var reportList = await _reportServices.GetAllReportsAsync();
-        //}
+        public async Task<IActionResult> DeleteReport(Guid id)
+        {
+            var dept = await _reportServices.GetReportById(id);
+            if (!dept.Status) return NotFound();
+
+            return View(dept);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteReportConfirmed(Guid id)
+        {
+            await _reportServices.DeleteReport(id);
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Details(Guid id)
+        {
+            var department = await _reportServices.GetReportById(id);
+            if (department == null)
+            {
+                throw new Exception("Request not found!");
+            }
+
+            return View(department);
+        }
 
     }
 }

@@ -7,9 +7,8 @@ namespace MITCRMS.Models.Entities
     {
         public string Tittle { get; set; }
         public string Content { get; set; }
-
-
-
+        
+        public string? FileUrl { get; set; }
         public Guid DepartmentId { get; set; }
         public Department Department { get; set; }
 

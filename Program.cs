@@ -1,13 +1,15 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MITCRMS.Identity;
+using MITCRMS.Implementation.Repository;
+using MITCRMS.Interface.Repository;
+using MITCRMS.Models.DTOs.Report.Validation;
+using MITCRMS.Models.Entities;
 using MITCRMS.Persistence.Context;
 using Scrutor;
-using MITCRMS.Models.Entities;
 using System;
-using MITCRMS.Interface.Repository;
-using MITCRMS.Implementation.Repository;
-using Microsoft.AspNetCore.Identity;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,6 +46,7 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateReportValidation>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
   .AddCookie(config =>
